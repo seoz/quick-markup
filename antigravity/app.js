@@ -16,6 +16,7 @@ const fontSelect = document.getElementById('font-select');
 const btnBold = document.getElementById('btn-bold');
 
 // Actions
+const btnUndo = document.getElementById('btn-undo');
 const btnDelete = document.getElementById('btn-delete');
 const btnExpand = document.getElementById('btn-expand');
 const btnReset = document.getElementById('btn-reset');
@@ -36,6 +37,49 @@ let isDrawing = false;
 let startX, startY;
 let activeShape = null;
 
+// Undo State
+let undoStack = [];
+let isUndoing = false;
+
+function saveHistory() {
+  if (isUndoing || !canvas || !originalImage) return;
+  
+  if (undoStack.length >= 50) {
+    undoStack.shift();
+  }
+  
+  const state = {
+    padding: canvasPadding,
+    objects: canvas.getObjects().map(o => o.toObject(['selectable', 'evented']))
+  };
+  
+  if (undoStack.length > 0) {
+     const lastState = undoStack[undoStack.length - 1];
+     if (JSON.stringify(lastState.objects) === JSON.stringify(state.objects) && lastState.padding === state.padding) return;
+  }
+  
+  undoStack.push(state);
+}
+
+function undo() {
+  if (undoStack.length > 1) {
+    isUndoing = true;
+    undoStack.pop(); 
+    const state = undoStack[undoStack.length - 1];
+    
+    canvasPadding = state.padding;
+    fabric.util.enlivenObjects(state.objects, (objs) => {
+      canvas.remove(...canvas.getObjects());
+      objs.forEach(o => {
+        canvas.add(o);
+      });
+      setupCanvasForImage(false);
+      canvas.renderAll();
+      isUndoing = false;
+    });
+  }
+}
+
 // Initialize Fabric
 function initFabric() {
   canvas = new fabric.Canvas('markup-canvas', {
@@ -46,7 +90,13 @@ function initFabric() {
   // Handle keydown for delete/copy/paste inside canvas
   window.addEventListener('keydown', (e) => {
     if (e.key === 'Backspace' || e.key === 'Delete') {
+      const activeObj = canvas.getActiveObject();
+      if (activeObj && activeObj.isEditing) return;
       deleteSelected();
+    }
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      undo();
     }
   });
 
@@ -56,6 +106,10 @@ function initFabric() {
   canvas.on('selection:created', onSelection);
   canvas.on('selection:updated', onSelection);
   canvas.on('selection:cleared', () => { fontPropGroup.style.display = currentTool === 'text' ? 'block' : 'none'; });
+  
+  canvas.on('path:created', () => saveHistory());
+  canvas.on('object:modified', () => saveHistory());
+  canvas.on('text:changed', () => saveHistory());
 }
 
 // Image Loading
@@ -78,11 +132,11 @@ function loadImageFromUrl(url) {
     dropZone.classList.add('hidden');
     appContainer.classList.remove('hidden');
     
-    setupCanvasForImage();
+    setupCanvasForImage(true);
   });
 }
 
-function setupCanvasForImage() {
+function setupCanvasForImage(isNewImage = false) {
   if (!originalImage) return;
 
   const wrapperRect = canvasWrapper.getBoundingClientRect();
@@ -115,7 +169,13 @@ function setupCanvasForImage() {
 
   // If we already have a background set, wait. We should set it as the background image.
   // Actually, setting background image with padding in Fabric:
-  canvas.setBackgroundImage(originalImage, canvas.renderAll.bind(canvas), {
+  canvas.setBackgroundImage(originalImage, () => {
+    canvas.renderAll();
+    if (isNewImage) {
+      undoStack = [];
+      saveHistory(); // initial state loaded
+    }
+  }, {
     originX: 'left',
     originY: 'top',
     left: canvasPadding,
@@ -165,7 +225,7 @@ window.addEventListener('paste', (e) => {
 // Window Resize
 window.addEventListener('resize', () => {
   if (canvas && originalImage) {
-    setupCanvasForImage();
+    setupCanvasForImage(false);
   }
 });
 
@@ -238,6 +298,7 @@ function setColor(color) {
       activeObj.set({ stroke: color });
     }
     canvas.renderAll();
+    saveHistory();
   }
 }
 
@@ -261,6 +322,7 @@ thicknessSlider.addEventListener('input', (e) => {
        activeObj.set({ strokeWidth: val });
      }
      canvas.renderAll();
+     saveHistory();
   }
 });
 
@@ -271,6 +333,7 @@ fontSelect.addEventListener('change', (e) => {
   if (activeObj && activeObj.type === 'i-text') {
     activeObj.set({ fontFamily: currentFont });
     canvas.renderAll();
+    saveHistory();
   }
 });
 
@@ -283,6 +346,7 @@ btnBold.addEventListener('click', () => {
   if (activeObj && activeObj.type === 'i-text') {
     activeObj.set({ fontWeight: isBold ? 'bold' : 'normal' });
     canvas.renderAll();
+    saveHistory();
   }
 });
 
@@ -348,6 +412,7 @@ function onMouseDown(o) {
     textObj.selectAll();
     setTool('select'); // auto switch to select
     isDrawing = false;
+    saveHistory();
   }
 }
 
@@ -418,6 +483,9 @@ function onMouseUp(o) {
     activeShape.setCoords();
     // Re-apply selectability if we immediately switch to select, but let's keep them unselectable until select mode
     activeShape = null;
+    saveHistory();
+  } else if (currentTool === 'arrow') {
+    saveHistory(); // arrow group was added
   }
 }
 
@@ -443,16 +511,18 @@ function deleteSelected() {
   if (activeObjects.length) {
     canvas.discardActiveObject();
     activeObjects.forEach(obj => canvas.remove(obj));
+    saveHistory();
   }
 }
 
+btnUndo.addEventListener('click', undo);
 btnDelete.addEventListener('click', deleteSelected);
 
 // Reset
 btnReset.addEventListener('click', () => {
   if (confirm('Are you sure you want to discard all markups and start over?')) {
     canvas.clear();
-    setupCanvasForImage();
+    setupCanvasForImage(true);
   }
 });
 
@@ -460,7 +530,7 @@ btnReset.addEventListener('click', () => {
 btnExpand.addEventListener('click', () => {
   if (!canvas || !originalImage) return;
   canvasPadding += 100; // Add 100px padding each time (internal coords)
-  setupCanvasForImage(); 
+  setupCanvasForImage(false); 
   // Restore objects positions? Wait, expanding size means we need to shift all objects if we want them visually centered, 
   // but since we shift the background image right/down by 100, we must also shift all existing markups.
   const objects = canvas.getObjects();
@@ -472,6 +542,7 @@ btnExpand.addEventListener('click', () => {
     obj.setCoords();
   });
   canvas.renderAll();
+  saveHistory();
 });
 
 // Export (Copy & Download)
