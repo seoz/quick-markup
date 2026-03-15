@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Image Markup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .header {
+            background: white;
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .app-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .app-title::before {
+            content: "✏️";
+            font-size: 24px;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .tool-group {
+            display: flex;
+            gap: 8px;
+            padding: 6px;
+            background: #f9fafb;
+            border-radius: 8px;
+            align-items: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        button:hover {
+            background: #f9fafb;
+            border-color: #3b82f6;
+            color: #1f2937;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        button.tool-btn {
+            min-width: 40px;
+            height: 40px;
+            padding: 8px;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        button.action-btn {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        button.action-btn:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        button.danger-btn {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        button.danger-btn:hover {
+            background: #dc2626;
+            border-color: #dc2626;
+        }
+
+        input[type="color"] {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        input[type="color"]:hover {
+            border-color: #3b82f6;
+        }
+
+        input[type="range"] {
+            width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            background: #e5e7eb;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        select, input[type="text"] {
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            padding: 30px;
+            position: relative;
+        }
+
+        #canvas {
+            background: white;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+            cursor: crosshair;
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+
+        #canvas.select-mode {
+            cursor: default;
+        }
+
+        .upload-zone {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #6b7280;
+            background: white;
+            padding: 60px 80px;
+            border-radius: 12px;
+            border: 2px dashed #d1d5db;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .upload-zone h2 {
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 24px;
+            color: #1f2937;
+        }
+
+        .upload-zone p {
+            margin: 15px 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #6c757d;
+            font-weight: 600;
+            margin-right: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .divider {
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(to bottom, transparent, #dee2e6, transparent);
+            margin: 0 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Text input modal */
+        .text-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .text-modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            min-width: 400px;
+            max-width: 600px;
+            pointer-events: auto;
+        }
+
+        .text-modal-content h3 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: move;
+            user-select: none;
+            padding: 5px 0;
+        }
+
+        .text-modal-content textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        .text-modal-content textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .text-modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .text-modal-buttons button {
+            padding: 8px 20px;
+        }
+
+        .text-modal-buttons button.primary {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .text-modal-buttons button.primary:hover {
+            background: #0056b3;
+            border-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="app-title">Quick Markup</div>
+
+        <div class="toolbar">
+            <div class="tool-group">
+                <button id="uploadImageBtn" class="action-btn" title="Upload an image to start marking up">📁 Upload Image</button>
+                <input type="file" id="fileInput" accept="image/*">
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="tool-group">
+                <span class="label">Drawing Tools</span>
+                <button id="tool-select" class="tool-btn" data-tool="select" title="Select & Move (Click to select, drag to move markups)">👆</button>
+                <button id="tool-arrow" class="tool-btn" data-tool="arrow" title="Draw Arrow (Click and drag to draw)">➜</button>
+                <button id="tool-rectangle" class="tool-btn" data-tool="rectangle" title="Draw Rectangle (Click and drag to draw)">▭</button>
+                <button id="tool-circle" class="tool-btn" data-tool="circle" title="Draw Circle (Click center, drag to set radius)">○</button>
+                <button id="tool-text" class="tool-btn" data-tool="text" title="Add Text (Click to place text)">T</button>
+                <button id="tool-pen" class="tool-btn" data-tool="pen" title="Free Draw (Click and drag to draw freehand)">✏️</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="tool-group">
+                <span class="label">Appearance</span>
+                <input type="color" id="colorPicker" value="#ff0000" title="Choose markup color">
+                <span style="font-size: 12px; color: #6b7280;">Line:</span>
+                <input type="range" id="thicknessSlider" min="1" max="20" value="3" title="Adjust line thickness">
+                <input type="number" id="thicknessValue" min="1" max="20" value="3" style="width: 50px;" title="Line thickness value">
+            </div>
+
+            <div class="tool-group">
+                <span class="label">Text Style</span>
+                <select id="fontFamily" title="Select font family">
+                    <option value="Arial">Arial</option>
+                    <option value="Helvetica">Helvetica</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Comic Sans MS">Comic Sans MS</option>
+                    <option value="Impact">Impact</option>
+                </select>
+                <span style="font-size: 12px; color: #6b7280;">Size:</span>
+                <input type="number" id="fontSize" min="10" max="200" value="24" style="width: 60px;" title="Font size in pixels">
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="tool-group">
+                <span class="label">Canvas</span>
+                <input type="number" id="canvasPadding" min="0" max="500" value="100" style="width: 70px;" placeholder="Padding" title="Enter padding amount in pixels">
+                <button id="expandCanvasBtn" title="Expand canvas by adding padding around the image">📐 Expand</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="tool-group">
+                <button class="danger-btn" id="clearBtn" title="Clear all markups (keeps image)">🗑️ Clear</button>
+                <button class="danger-btn" id="resetBtn" title="Reset everything and start fresh">🔄 Reset</button>
+                <button class="action-btn" id="copyBtn" title="Copy marked-up image to clipboard">📋 Copy</button>
+                <button class="action-btn" id="downloadBtn" title="Download marked-up image as PNG">⬇️ Download</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+        <div class="upload-zone" id="uploadZone">
+            <h2>✏️ Quick Markup</h2>
+            <button id="chooseImageBtn" class="action-btn" style="padding: 16px 32px; font-size: 18px; border: none;">
+                📁 Choose Image
+            </button>
+            <p>or paste from clipboard (Ctrl/Cmd + V)</p>
+        </div>
+    </div>
+
+    <!-- Text input modal -->
+    <div id="textModal" class="text-modal hidden">
+        <div class="text-modal-content">
+            <h3>Enter Text</h3>
+            <textarea id="textInput" placeholder="Enter your text here... (supports multiple lines)"></textarea>
+            <div class="text-modal-buttons">
+                <button id="textCancelBtn">Cancel</button>
+                <button id="textOkBtn" class="primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

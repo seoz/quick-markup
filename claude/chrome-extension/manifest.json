@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Quick Markup",
+  "version": "1.0.0",
+  "description": "Quick image annotation tool — draw arrows, rectangles, circles, and text on images.",
+  "permissions": ["tabs"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Quick Markup"
+  }
+}
