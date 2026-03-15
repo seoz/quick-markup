@@ -264,6 +264,7 @@ thicknessSlider.addEventListener('input', (e) => {
 
 fontSelect.addEventListener('change', (e) => {
   currentFont = e.target.value;
+  fontSelect.style.fontFamily = currentFont;
   const activeObj = canvas?.getActiveObject();
   if (activeObj && activeObj.type === 'i-text') {
     activeObj.set({ fontFamily: currentFont });
@@ -411,6 +412,7 @@ function onSelection(o) {
     if (activeObj.type === 'i-text') {
       fontPropGroup.style.display = 'block';
       fontSelect.value = activeObj.fontFamily;
+      fontSelect.style.fontFamily = activeObj.fontFamily;
     } else {
       fontPropGroup.style.display = 'none';
     }
