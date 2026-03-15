@@ -270,6 +270,7 @@
 
             <div class="tool-group">
                 <button id="clearBtn">🗑️ Clear All</button>
+                <button id="resetBtn">🔄 Reset</button>
                 <button id="copyBtn">📋 Copy</button>
                 <button id="downloadBtn">⬇️ Download</button>
             </div>
@@ -698,7 +699,22 @@
         document.getElementById('clearBtn').addEventListener('click', () => {
             if (confirm('Clear all markups?')) {
                 drawings = [];
+                selectedDrawing = null;
                 redraw();
+            }
+        });
+
+        // Reset - clear image and markups
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('Reset and start from scratch? This will clear the image and all markups.')) {
+                backgroundImage = null;
+                drawings = [];
+                selectedDrawing = null;
+                canvas.width = 0;
+                canvas.height = 0;
+                canvas.style.display = 'none';
+                uploadZone.classList.remove('hidden');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
         });
 
