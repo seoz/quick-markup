@@ -13,6 +13,7 @@ const thicknessSlider = document.getElementById('thickness-slider');
 const thicknessVal = document.getElementById('thickness-val');
 const fontPropGroup = document.getElementById('font-prop-group');
 const fontSelect = document.getElementById('font-select');
+const btnBold = document.getElementById('btn-bold');
 
 // Actions
 const btnDelete = document.getElementById('btn-delete');
@@ -27,6 +28,7 @@ let currentTool = 'select'; // select, draw, arrow, rect, circle, text
 let currentColor = '#ff3366';
 let currentThickness = 10;
 let currentFont = 'Inter';
+let isBold = false;
 let originalImage = null; // Store reference to image for resets/padding
 let currentScale = 1;
 let canvasPadding = 0; // Internal padding applied
@@ -272,6 +274,18 @@ fontSelect.addEventListener('change', (e) => {
   }
 });
 
+btnBold.addEventListener('click', () => {
+  isBold = !isBold;
+  btnBold.style.background = isBold ? 'var(--active-bg)' : '';
+  btnBold.style.color = isBold ? 'var(--primary)' : '';
+  
+  const activeObj = canvas?.getActiveObject();
+  if (activeObj && activeObj.type === 'i-text') {
+    activeObj.set({ fontWeight: isBold ? 'bold' : 'normal' });
+    canvas.renderAll();
+  }
+});
+
 // Drawing logic
 function onMouseDown(o) {
   if (currentTool === 'select' || currentTool === 'draw') return;
@@ -322,6 +336,7 @@ function onMouseDown(o) {
       left: startX,
       top: startY,
       fontFamily: currentFont,
+      fontWeight: isBold ? 'bold' : 'normal',
       fill: currentColor,
       fontSize: currentThickness * 8 + 12, // Arbitrary scaling for text size
       selectable: true,
@@ -413,6 +428,9 @@ function onSelection(o) {
       fontPropGroup.style.display = 'block';
       fontSelect.value = activeObj.fontFamily;
       fontSelect.style.fontFamily = activeObj.fontFamily;
+      isBold = activeObj.fontWeight === 'bold';
+      btnBold.style.background = isBold ? 'var(--active-bg)' : '';
+      btnBold.style.color = isBold ? 'var(--primary)' : '';
     } else {
       fontPropGroup.style.display = 'none';
     }

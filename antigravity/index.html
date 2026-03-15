@@ -76,15 +76,20 @@
 
         <div class="prop-group" id="font-prop-group" style="display: none;">
           <label>Font</label>
-          <select id="font-select" class="styled-select" style="font-family: Inter;">
-            <option value="Inter" style="font-family: Inter;">Inter</option>
-            <option value="Arial" style="font-family: Arial;">Arial</option>
-            <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
-            <option value="Georgia" style="font-family: Georgia;">Georgia</option>
-            <option value="Impact" style="font-family: Impact;">Impact</option>
-            <option value="Times New Roman" style="font-family: 'Times New Roman';">Times</option>
-            <option value="Verdana" style="font-family: Verdana;">Verdana</option>
-          </select>
+          <div style="display: flex; gap: 8px;">
+            <select id="font-select" class="styled-select" style="font-family: Inter; flex: 1;">
+              <option value="Inter" style="font-family: Inter;">Inter</option>
+              <option value="Arial" style="font-family: Arial;">Arial</option>
+              <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
+              <option value="Georgia" style="font-family: Georgia;">Georgia</option>
+              <option value="Impact" style="font-family: Impact;">Impact</option>
+              <option value="Times New Roman" style="font-family: 'Times New Roman';">Times</option>
+              <option value="Verdana" style="font-family: Verdana;">Verdana</option>
+            </select>
+            <button id="btn-bold" class="action-btn" title="Bold Text" style="padding: 0 12px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path></svg>
+            </button>
+          </div>
         </div>
       </div>
 
