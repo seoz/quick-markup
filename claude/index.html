@@ -262,7 +262,21 @@
             </div>
 
             <div class="tool-group">
-                <span class="label">Font Size:</span>
+                <span class="label">Font:</span>
+                <select id="fontFamily">
+                    <option value="Arial">Arial</option>
+                    <option value="Helvetica">Helvetica</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Comic Sans MS">Comic Sans MS</option>
+                    <option value="Impact">Impact</option>
+                </select>
+            </div>
+
+            <div class="tool-group">
+                <span class="label">Size:</span>
                 <input type="number" id="fontSize" min="10" max="200" value="24">
             </div>
 
@@ -309,6 +323,7 @@
         const thicknessSlider = document.getElementById('thicknessSlider');
         const thicknessValue = document.getElementById('thicknessValue');
         const fontSizeInput = document.getElementById('fontSize');
+        const fontFamilySelect = document.getElementById('fontFamily');
 
         let currentTool = 'select';
         let isDrawing = false;
@@ -435,10 +450,10 @@
 
         // Get bounding box of a drawing
         function getDrawingBounds(drawing) {
-            const { type, x1, y1, x2, y2, text, fontSize } = drawing;
+            const { type, x1, y1, x2, y2, text, fontSize, fontFamily } = drawing;
 
             if (type === 'text') {
-                ctx.font = `${fontSize}px Arial`;
+                ctx.font = `${fontSize}px ${fontFamily || 'Arial'}`;
                 const lines = text.split('\n');
                 const lineHeight = fontSize * 1.2;
                 let maxWidth = 0;
@@ -492,7 +507,7 @@
 
         // Draw shape
         function drawShape(drawing) {
-            const { type, x1, y1, x2, y2, color, thickness, text, fontSize } = drawing;
+            const { type, x1, y1, x2, y2, color, thickness, text, fontSize, fontFamily } = drawing;
 
             ctx.strokeStyle = color;
             ctx.fillStyle = color;
@@ -510,7 +525,7 @@
                 ctx.arc(x1, y1, radius, 0, 2 * Math.PI);
                 ctx.stroke();
             } else if (type === 'text') {
-                ctx.font = `${fontSize}px Arial`;
+                ctx.font = `${fontSize}px ${fontFamily || 'Arial'}`;
                 const lines = text.split('\n');
                 const lineHeight = fontSize * 1.2;
                 lines.forEach((line, index) => {
@@ -833,7 +848,8 @@
                     y1: pendingTextPosition.y,
                     text: text,
                     color: colorPicker.value,
-                    fontSize: parseInt(fontSizeInput.value)
+                    fontSize: parseInt(fontSizeInput.value),
+                    fontFamily: fontFamilySelect.value
                 });
                 redraw();
             }
