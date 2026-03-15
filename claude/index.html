@@ -197,6 +197,7 @@
 
             <div class="tool-group">
                 <button id="clearBtn">🗑️ Clear All</button>
+                <button id="copyBtn">📋 Copy</button>
                 <button id="downloadBtn">⬇️ Download</button>
             </div>
         </div>
@@ -614,6 +615,41 @@
             if (confirm('Clear all markups?')) {
                 drawings = [];
                 redraw();
+            }
+        });
+
+        // Copy to clipboard
+        document.getElementById('copyBtn').addEventListener('click', async () => {
+            if (!backgroundImage) {
+                alert('Please load an image first');
+                return;
+            }
+
+            try {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        'image/png': blob
+                    })
+                ]);
+
+                // Visual feedback
+                const btn = document.getElementById('copyBtn');
+                const originalText = btn.textContent;
+                btn.textContent = '✓ Copied!';
+                btn.style.background = '#28a745';
+                btn.style.color = 'white';
+                btn.style.borderColor = '#28a745';
+
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                    btn.style.borderColor = '';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy to clipboard:', err);
+                alert('Failed to copy to clipboard. Your browser may not support this feature.');
             }
         });
 
