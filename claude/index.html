@@ -13,7 +13,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f5f5f5;
+            background: #f0f2f5;
             display: flex;
             flex-direction: column;
             height: 100vh;
@@ -22,74 +22,180 @@
 
         .header {
             background: white;
-            padding: 15px 20px;
-            border-bottom: 1px solid #e0e0e0;
+            padding: 16px 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             display: flex;
-            gap: 10px;
+            gap: 20px;
             flex-wrap: wrap;
             align-items: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .app-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .app-title::before {
+            content: "✏️";
+            font-size: 24px;
         }
 
         .toolbar {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: center;
             flex-wrap: wrap;
+            flex: 1;
         }
 
         .tool-group {
             display: flex;
-            gap: 5px;
-            padding: 5px;
-            background: #f9f9f9;
-            border-radius: 5px;
+            gap: 8px;
+            padding: 6px;
+            background: #f9fafb;
+            border-radius: 8px;
             align-items: center;
+            border: 1px solid #e5e7eb;
         }
 
         button {
             padding: 8px 16px;
-            border: 1px solid #ddd;
+            border: 1px solid #d1d5db;
             background: white;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
             transition: all 0.2s;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         button:hover {
-            background: #f0f0f0;
+            background: #f9fafb;
+            border-color: #3b82f6;
+            color: #1f2937;
+        }
+
+        button:active {
+            transform: scale(0.98);
         }
 
         button.active {
-            background: #007bff;
+            background: #3b82f6;
             color: white;
-            border-color: #007bff;
+            border-color: #3b82f6;
+        }
+
+        button.tool-btn {
+            min-width: 40px;
+            height: 40px;
+            padding: 8px;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        button.action-btn {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        button.action-btn:hover {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+
+        button.danger-btn {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        button.danger-btn:hover {
+            background: #dc2626;
+            border-color: #dc2626;
         }
 
         input[type="color"] {
             width: 40px;
-            height: 32px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            height: 40px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
             cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        input[type="color"]:hover {
+            border-color: #3b82f6;
         }
 
         input[type="range"] {
             width: 100px;
+            height: 4px;
+            border-radius: 2px;
+            background: #e5e7eb;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         input[type="number"] {
             width: 60px;
-            padding: 6px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         select, input[type="text"] {
-            padding: 6px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
             font-size: 14px;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        select:focus, input[type="text"]:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .canvas-container {
@@ -98,16 +204,17 @@
             align-items: center;
             justify-content: center;
             overflow: auto;
-            padding: 20px;
-            background: #e9ecef;
+            padding: 30px;
+            position: relative;
         }
 
         #canvas {
             background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
             cursor: crosshair;
             max-width: 100%;
             max-height: 100%;
+            border-radius: 8px;
         }
 
         #canvas.select-mode {
@@ -120,17 +227,25 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            color: #666;
+            color: #6b7280;
+            background: white;
+            padding: 60px 80px;
+            border-radius: 12px;
+            border: 2px dashed #d1d5db;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
 
         .upload-zone h2 {
             margin-bottom: 20px;
-            font-weight: 500;
+            font-weight: 600;
+            font-size: 24px;
+            color: #1f2937;
         }
 
         .upload-zone p {
-            margin: 10px 0;
-            color: #999;
+            margin: 15px 0;
+            color: #6b7280;
+            font-size: 14px;
         }
 
         #fileInput {
@@ -139,15 +254,18 @@
 
         .label {
             font-size: 12px;
-            color: #666;
-            margin-right: 5px;
+            color: #6c757d;
+            font-weight: 600;
+            margin-right: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .divider {
-            width: 1px;
-            height: 30px;
-            background: #ddd;
-            margin: 0 5px;
+            width: 2px;
+            height: 40px;
+            background: linear-gradient(to bottom, transparent, #dee2e6, transparent);
+            margin: 0 8px;
         }
 
         .hidden {
@@ -230,46 +348,39 @@
 </head>
 <body>
     <div class="header">
+        <div class="app-title">Quick Markup</div>
+
         <div class="toolbar">
             <div class="tool-group">
-                <button onclick="document.getElementById('fileInput').click()">📁 Upload Image</button>
+                <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Upload an image to start marking up">📁 Upload Image</button>
                 <input type="file" id="fileInput" accept="image/*">
             </div>
 
+            <div class="divider"></div>
+
             <div class="tool-group">
-                <span class="label">Canvas Padding:</span>
-                <input type="number" id="canvasPadding" min="0" max="500" value="100" style="width: 70px;">
-                <button id="expandCanvasBtn">📐 Expand</button>
+                <span class="label">Drawing Tools</span>
+                <button id="tool-select" class="tool-btn" data-tool="select" title="Select & Move (Click to select, drag to move markups)">👆</button>
+                <button id="tool-arrow" class="tool-btn" data-tool="arrow" title="Draw Arrow (Click and drag to draw)">➜</button>
+                <button id="tool-rectangle" class="tool-btn" data-tool="rectangle" title="Draw Rectangle (Click and drag to draw)">▭</button>
+                <button id="tool-circle" class="tool-btn" data-tool="circle" title="Draw Circle (Click center, drag to set radius)">○</button>
+                <button id="tool-text" class="tool-btn" data-tool="text" title="Add Text (Click to place text)">T</button>
+                <button id="tool-pen" class="tool-btn" data-tool="pen" title="Free Draw (Click and drag to draw freehand)">✏️</button>
             </div>
 
             <div class="divider"></div>
 
             <div class="tool-group">
-                <span class="label">Tool:</span>
-                <button id="tool-select" class="tool-btn" data-tool="select">👆 Select</button>
-                <button id="tool-arrow" class="tool-btn" data-tool="arrow">➜ Arrow</button>
-                <button id="tool-rectangle" class="tool-btn" data-tool="rectangle">▭ Rectangle</button>
-                <button id="tool-circle" class="tool-btn" data-tool="circle">○ Circle</button>
-                <button id="tool-text" class="tool-btn" data-tool="text">T Text</button>
-                <button id="tool-pen" class="tool-btn" data-tool="pen">✏️ Pen</button>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="tool-group">
-                <span class="label">Color:</span>
-                <input type="color" id="colorPicker" value="#ff0000">
+                <span class="label">Appearance</span>
+                <input type="color" id="colorPicker" value="#ff0000" title="Choose markup color">
+                <span style="font-size: 12px; color: #6b7280;">Line:</span>
+                <input type="range" id="thicknessSlider" min="1" max="20" value="3" title="Adjust line thickness">
+                <input type="number" id="thicknessValue" min="1" max="20" value="3" style="width: 50px;" title="Line thickness value">
             </div>
 
             <div class="tool-group">
-                <span class="label">Thickness:</span>
-                <input type="range" id="thicknessSlider" min="1" max="20" value="3">
-                <input type="number" id="thicknessValue" min="1" max="20" value="3">
-            </div>
-
-            <div class="tool-group">
-                <span class="label">Font:</span>
-                <select id="fontFamily">
+                <span class="label">Text Style</span>
+                <select id="fontFamily" title="Select font family">
                     <option value="Arial">Arial</option>
                     <option value="Helvetica">Helvetica</option>
                     <option value="Times New Roman">Times New Roman</option>
@@ -279,20 +390,25 @@
                     <option value="Comic Sans MS">Comic Sans MS</option>
                     <option value="Impact">Impact</option>
                 </select>
-            </div>
-
-            <div class="tool-group">
-                <span class="label">Size:</span>
-                <input type="number" id="fontSize" min="10" max="200" value="24">
+                <span style="font-size: 12px; color: #6b7280;">Size:</span>
+                <input type="number" id="fontSize" min="10" max="200" value="24" style="width: 60px;" title="Font size in pixels">
             </div>
 
             <div class="divider"></div>
 
             <div class="tool-group">
-                <button id="clearBtn">🗑️ Clear All</button>
-                <button id="resetBtn">🔄 Reset</button>
-                <button id="copyBtn">📋 Copy</button>
-                <button id="downloadBtn">⬇️ Download</button>
+                <span class="label">Canvas</span>
+                <input type="number" id="canvasPadding" min="0" max="500" value="100" style="width: 70px;" placeholder="Padding" title="Enter padding amount in pixels">
+                <button id="expandCanvasBtn" title="Expand canvas by adding padding around the image">📐 Expand</button>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="tool-group">
+                <button class="danger-btn" id="clearBtn" title="Clear all markups (keeps image)">🗑️ Clear</button>
+                <button class="danger-btn" id="resetBtn" title="Reset everything and start fresh">🔄 Reset</button>
+                <button class="action-btn" id="copyBtn" title="Copy marked-up image to clipboard">📋 Copy</button>
+                <button class="action-btn" id="downloadBtn" title="Download marked-up image as PNG">⬇️ Download</button>
             </div>
         </div>
     </div>
@@ -300,11 +416,11 @@
     <div class="canvas-container">
         <canvas id="canvas"></canvas>
         <div class="upload-zone" id="uploadZone">
-            <h2>Quick Image Markup</h2>
-            <button onclick="document.getElementById('fileInput').click()" style="padding: 12px 24px; font-size: 16px;">
-                Choose Image
+            <h2>✏️ Quick Markup</h2>
+            <button class="action-btn" onclick="document.getElementById('fileInput').click()" style="padding: 16px 32px; font-size: 18px; border: none;">
+                📁 Choose Image
             </button>
-            <p>or paste an image from clipboard (Ctrl/Cmd + V)</p>
+            <p>or paste from clipboard (Ctrl/Cmd + V)</p>
         </div>
     </div>
 
