@@ -7,6 +7,12 @@ const thicknessSlider = document.getElementById('thicknessSlider');
 const thicknessValue = document.getElementById('thicknessValue');
 const fontSizeInput = document.getElementById('fontSize');
 const fontFamilySelect = document.getElementById('fontFamily');
+const fontPreview = document.getElementById('fontPreview');
+
+// Font preview
+fontFamilySelect.addEventListener('change', () => {
+    fontPreview.style.fontFamily = fontFamilySelect.value;
+});
 
 let currentTool = 'select';
 let isDrawing = false;

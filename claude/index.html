@@ -381,15 +381,16 @@
             <div class="tool-group">
                 <span class="label">Text Style</span>
                 <select id="fontFamily" title="Select font family">
-                    <option value="Arial">Arial</option>
-                    <option value="Helvetica">Helvetica</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Courier New">Courier New</option>
-                    <option value="Verdana">Verdana</option>
-                    <option value="Comic Sans MS">Comic Sans MS</option>
-                    <option value="Impact">Impact</option>
+                    <option value="Arial" style="font-family: Arial">Arial</option>
+                    <option value="Helvetica" style="font-family: Helvetica">Helvetica</option>
+                    <option value="Times New Roman" style="font-family: Times New Roman">Times New Roman</option>
+                    <option value="Georgia" style="font-family: Georgia">Georgia</option>
+                    <option value="Courier New" style="font-family: Courier New">Courier New</option>
+                    <option value="Verdana" style="font-family: Verdana">Verdana</option>
+                    <option value="Comic Sans MS" style="font-family: Comic Sans MS">Comic Sans MS</option>
+                    <option value="Impact" style="font-family: Impact">Impact</option>
                 </select>
+                <span id="fontPreview" title="Font preview" style="font-family: Arial; font-size: 18px; padding: 4px 10px; background: white; border: 1px solid #d1d5db; border-radius: 6px; color: #1f2937; user-select: none; min-width: 48px; text-align: center;">Aa</span>
                 <span style="font-size: 12px; color: #6b7280;">Size:</span>
                 <input type="number" id="fontSize" min="10" max="200" value="24" style="width: 60px;" title="Font size in pixels">
             </div>
@@ -446,6 +447,12 @@
         const thicknessValue = document.getElementById('thicknessValue');
         const fontSizeInput = document.getElementById('fontSize');
         const fontFamilySelect = document.getElementById('fontFamily');
+        const fontPreview = document.getElementById('fontPreview');
+
+        // Font preview
+        fontFamilySelect.addEventListener('change', () => {
+            fontPreview.style.fontFamily = fontFamilySelect.value;
+        });
 
         let currentTool = 'select';
         let isDrawing = false;
