@@ -200,26 +200,45 @@ button {
 
 .color-picker-wrapper {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
 }
 
-input[type="color"] {
-  -webkit-appearance: none;
-  border: none;
-  width: 32px;
-  height: 32px;
+.custom-color-picker {
+  position: relative;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
+  background: conic-gradient(from 90deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  background: none;
-  padding: 0;
+  transition: transform var(--transition);
+  flex-shrink: 0;
 }
-input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
+
+.custom-color-picker:hover {
+  transform: scale(1.1);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.4);
 }
-input[type="color"]::-webkit-color-swatch {
-  border: 2px solid var(--panel-border);
-  border-radius: 50%;
+
+.custom-color-picker svg {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+  z-index: 2;
+}
+
+.custom-color-picker input[type="color"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .color-swatches {
