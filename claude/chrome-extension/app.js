@@ -36,6 +36,33 @@ let dragOffsetY = 0;
 let imageOffsetX = 0;
 let imageOffsetY = 0;
 
+// Undo history
+const MAX_HISTORY = 50;
+let history = [];
+
+function saveHistory() {
+    history.push({
+        drawings: drawings.map(d => ({ ...d })),
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height,
+        imageOffsetX,
+        imageOffsetY
+    });
+    if (history.length > MAX_HISTORY) history.shift();
+}
+
+function undo() {
+    if (history.length === 0) return;
+    const state = history.pop();
+    drawings = state.drawings;
+    canvas.width = state.canvasWidth;
+    canvas.height = state.canvasHeight;
+    imageOffsetX = state.imageOffsetX;
+    imageOffsetY = state.imageOffsetY;
+    selectedDrawing = null;
+    redraw();
+}
+
 // Upload buttons (formerly inline onclick handlers)
 document.getElementById('uploadImageBtn').addEventListener('click', () => {
     fileInput.click();
@@ -290,6 +317,7 @@ canvas.addEventListener('mousedown', (e) => {
     if (currentTool === 'select') {
         // Check if clicking on a selected drawing first
         if (selectedDrawing !== null && isPointInDrawing(drawings[selectedDrawing], pos.x, pos.y)) {
+            saveHistory();
             isDragging = true;
             const drawing = drawings[selectedDrawing];
             dragOffsetX = pos.x - drawing.x1;
@@ -299,6 +327,7 @@ canvas.addEventListener('mousedown', (e) => {
             selectedDrawing = null;
             for (let i = drawings.length - 1; i >= 0; i--) {
                 if (isPointInDrawing(drawings[i], pos.x, pos.y)) {
+                    saveHistory();
                     selectedDrawing = i;
                     const drawing = drawings[i];
                     dragOffsetX = pos.x - drawing.x1;
@@ -316,6 +345,7 @@ canvas.addEventListener('mousedown', (e) => {
             showTextModal(startX, startY);
             isDrawing = false;
         } else if (currentTool === 'pen') {
+            saveHistory();
             currentDrawing = {
                 type: 'pen',
                 x1: startX,
@@ -390,6 +420,7 @@ canvas.addEventListener('mouseup', (e) => {
     const pos = getMousePos(e);
 
     if (currentTool !== 'pen') {
+        saveHistory();
         drawings.push({
             type: currentTool,
             x1: startX,
@@ -405,12 +436,18 @@ canvas.addEventListener('mouseup', (e) => {
     isDrawing = false;
 });
 
-// Delete selected drawing on Delete/Backspace key
+// Delete selected drawing on Delete/Backspace key; Ctrl/Cmd+Z to undo
 document.addEventListener('keydown', (e) => {
-    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedDrawing !== null && currentTool === 'select') {
+    if ((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey)) {
+        if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            undo();
+        }
+    } else if ((e.key === 'Delete' || e.key === 'Backspace') && selectedDrawing !== null && currentTool === 'select') {
         // Check if we're not typing in an input field
         if (document.activeElement.tagName !== 'INPUT') {
             e.preventDefault();
+            saveHistory();
             drawings.splice(selectedDrawing, 1);
             selectedDrawing = null;
             redraw();
@@ -418,9 +455,15 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
+// Undo
+document.getElementById('undoBtn').addEventListener('click', () => {
+    undo();
+});
+
 // Clear all
 document.getElementById('clearBtn').addEventListener('click', () => {
     if (confirm('Clear all markups?')) {
+        saveHistory();
         drawings = [];
         selectedDrawing = null;
         redraw();
@@ -435,6 +478,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
         selectedDrawing = null;
         imageOffsetX = 0;
         imageOffsetY = 0;
+        history = [];
         canvas.width = 0;
         canvas.height = 0;
         canvas.style.display = 'none';
@@ -455,6 +499,8 @@ document.getElementById('expandCanvasBtn').addEventListener('click', () => {
         alert('Please enter a padding value greater than 0');
         return;
     }
+
+    saveHistory();
 
     // Create a new canvas with expanded size
     const newWidth = canvas.width + (padding * 2);
@@ -590,6 +636,7 @@ document.getElementById('textOkBtn').addEventListener('click', () => {
     const text = textInput.value.trim();
 
     if (text && pendingTextPosition) {
+        saveHistory();
         drawings.push({
             type: 'text',
             x1: pendingTextPosition.x,
