@@ -153,6 +153,79 @@
         .hidden {
             display: none;
         }
+
+        /* Text input modal */
+        .text-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .text-modal-content {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            min-width: 400px;
+            max-width: 600px;
+            pointer-events: auto;
+        }
+
+        .text-modal-content h3 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: move;
+            user-select: none;
+            padding: 5px 0;
+        }
+
+        .text-modal-content textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        .text-modal-content textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .text-modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .text-modal-buttons button {
+            padding: 8px 20px;
+        }
+
+        .text-modal-buttons button.primary {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .text-modal-buttons button.primary:hover {
+            background: #0056b3;
+            border-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -211,6 +284,18 @@
                 Choose Image
             </button>
             <p>or paste an image from clipboard (Ctrl/Cmd + V)</p>
+        </div>
+    </div>
+
+    <!-- Text input modal -->
+    <div id="textModal" class="text-modal hidden">
+        <div class="text-modal-content">
+            <h3>Enter Text</h3>
+            <textarea id="textInput" placeholder="Enter your text here... (supports multiple lines)"></textarea>
+            <div class="text-modal-buttons">
+                <button id="textCancelBtn">Cancel</button>
+                <button id="textOkBtn" class="primary">OK</button>
+            </div>
         </div>
     </div>
 
@@ -353,12 +438,18 @@
 
             if (type === 'text') {
                 ctx.font = `${fontSize}px Arial`;
-                const metrics = ctx.measureText(text);
+                const lines = text.split('\n');
+                const lineHeight = fontSize * 1.2;
+                let maxWidth = 0;
+                lines.forEach(line => {
+                    const metrics = ctx.measureText(line);
+                    maxWidth = Math.max(maxWidth, metrics.width);
+                });
                 return {
                     minX: x1,
                     minY: y1 - fontSize,
-                    maxX: x1 + metrics.width,
-                    maxY: y1
+                    maxX: x1 + maxWidth,
+                    maxY: y1 + (lines.length - 1) * lineHeight
                 };
             } else if (type === 'circle') {
                 const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -419,7 +510,11 @@
                 ctx.stroke();
             } else if (type === 'text') {
                 ctx.font = `${fontSize}px Arial`;
-                ctx.fillText(text, x1, y1);
+                const lines = text.split('\n');
+                const lineHeight = fontSize * 1.2;
+                lines.forEach((line, index) => {
+                    ctx.fillText(line, x1, y1 + (index * lineHeight));
+                });
             } else if (type === 'pen') {
                 ctx.beginPath();
                 ctx.moveTo(x1, y1);
@@ -494,18 +589,7 @@
                 isDrawing = true;
 
                 if (currentTool === 'text') {
-                    const text = prompt('Enter text:');
-                    if (text) {
-                        drawings.push({
-                            type: 'text',
-                            x1: startX,
-                            y1: startY,
-                            text: text,
-                            color: colorPicker.value,
-                            fontSize: parseInt(fontSizeInput.value)
-                        });
-                        redraw();
-                    }
+                    showTextModal(startX, startY);
                     isDrawing = false;
                 } else if (currentTool === 'pen') {
                     currentDrawing = {
@@ -665,6 +749,96 @@
             link.href = canvas.toDataURL('image/png');
             link.click();
         });
+
+        // Text modal functions
+        let pendingTextPosition = null;
+        let modalDragging = false;
+        let modalDragOffsetX = 0;
+        let modalDragOffsetY = 0;
+
+        function showTextModal(x, y) {
+            pendingTextPosition = { x, y };
+            const modal = document.getElementById('textModal');
+            const modalContent = document.querySelector('.text-modal-content');
+            const textInput = document.getElementById('textInput');
+
+            // Reset position to center
+            modalContent.style.top = '50%';
+            modalContent.style.left = '50%';
+            modalContent.style.transform = 'translate(-50%, -50%)';
+
+            textInput.value = '';
+            modal.classList.remove('hidden');
+
+            // Use setTimeout to ensure focus works after modal is rendered
+            setTimeout(() => {
+                textInput.focus();
+                textInput.select();
+            }, 0);
+        }
+
+        function hideTextModal() {
+            const modal = document.getElementById('textModal');
+            modal.classList.add('hidden');
+            pendingTextPosition = null;
+        }
+
+        // Make modal draggable by the title
+        document.querySelector('.text-modal-content h3').addEventListener('mousedown', (e) => {
+            modalDragging = true;
+            const modalContent = document.querySelector('.text-modal-content');
+            const rect = modalContent.getBoundingClientRect();
+            modalDragOffsetX = e.clientX - rect.left;
+            modalDragOffsetY = e.clientY - rect.top;
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!modalDragging) return;
+
+            const modalContent = document.querySelector('.text-modal-content');
+            modalContent.style.transform = 'none';
+            modalContent.style.left = (e.clientX - modalDragOffsetX) + 'px';
+            modalContent.style.top = (e.clientY - modalDragOffsetY) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            modalDragging = false;
+        });
+
+        document.getElementById('textOkBtn').addEventListener('click', () => {
+            const textInput = document.getElementById('textInput');
+            const text = textInput.value.trim();
+
+            if (text && pendingTextPosition) {
+                drawings.push({
+                    type: 'text',
+                    x1: pendingTextPosition.x,
+                    y1: pendingTextPosition.y,
+                    text: text,
+                    color: colorPicker.value,
+                    fontSize: parseInt(fontSizeInput.value)
+                });
+                redraw();
+            }
+
+            hideTextModal();
+        });
+
+        document.getElementById('textCancelBtn').addEventListener('click', () => {
+            hideTextModal();
+        });
+
+        // Allow Enter with Shift for new lines, Enter alone to submit
+        document.getElementById('textInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('textOkBtn').click();
+            } else if (e.key === 'Escape') {
+                hideTextModal();
+            }
+        });
+
     </script>
 </body>
 </html>
