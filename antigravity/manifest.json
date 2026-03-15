@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Quick Image Markup",
+  "version": "1.0",
+  "description": "Quickly add arrows, text, rectangles, circles, and drawings to images with a modern UI.",
+  "permissions": [
+    "activeTab",
+    "clipboardWrite",
+    "clipboardRead"
+  ],
+  "action": {
+    "default_icon": {
+      "128": "icon.png"
+    },
+    "default_title": "Markup Image"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "128": "icon.png"
+  }
+}

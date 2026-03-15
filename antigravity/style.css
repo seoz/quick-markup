@@ -1,0 +1,352 @@
+:root {
+  --bg-dark: #0f172a;
+  --bg-canvas: #1e293b;
+  --panel-bg: rgba(15, 23, 42, 0.75);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --active-bg: rgba(59, 130, 246, 0.2);
+  --border-radius: 12px;
+  --transition: all 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Empty State (Upload) */
+.hidden {
+  display: none !important;
+}
+
+#drop-zone {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-dark);
+  z-index: 100;
+  transition: background-color var(--transition);
+}
+
+#drop-zone.dragover {
+  background-color: var(--bg-canvas);
+}
+
+.empty-content {
+  text-align: center;
+  padding: 40px;
+  border: 2px dashed var(--panel-border);
+  border-radius: var(--border-radius);
+  background: var(--panel-bg);
+  backdrop-filter: blur(10px);
+  max-width: 400px;
+}
+
+.icon-container {
+  color: var(--primary);
+  margin-bottom: 20px;
+}
+
+.empty-content h2 {
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.empty-content p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  transition: var(--transition);
+  color: var(--text-main);
+}
+
+.primary-btn {
+  background-color: var(--primary);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.primary-btn:hover {
+  background-color: var(--primary-hover);
+}
+
+/* Main App Layout */
+#app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Toolbar Sidebar */
+.toolbar {
+  width: 280px;
+  background: var(--panel-bg);
+  border-right: 1px solid var(--panel-border);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  z-index: 10;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.toolbar-brand {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.toolbar-brand h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.tool-section {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.tool-section.no-border {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.section-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+/* Tool Grid */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tool-btn {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.tool-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
+.tool-btn.active {
+  background: var(--active-bg);
+  color: var(--primary);
+}
+
+/* Properties */
+.prop-group {
+  margin-bottom: 16px;
+}
+.prop-group:last-child {
+  margin-bottom: 0;
+}
+
+.prop-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.color-picker-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+input[type="color"] {
+  -webkit-appearance: none;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: 2px solid var(--panel-border);
+  border-radius: 50%;
+}
+
+.color-swatches {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.swatch:hover {
+  transform: scale(1.1);
+}
+
+/* Slider */
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--primary);
+}
+
+/* Custom Select */
+.styled-select {
+  width: 100%;
+  background: rgba(0,0,0,0.2);
+  color: var(--text-main);
+  border: 1px solid var(--panel-border);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+}
+.styled-select:focus {
+  border-color: var(--primary);
+}
+.styled-select option {
+  background: var(--bg-dark);
+  color: var(--text-main);
+}
+
+/* Actions */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.action-btn.danger:hover {
+  background: var(--danger-hover);
+  color: white;
+}
+
+/* Spacer for pushing export buttons down */
+.spacer {
+  flex-grow: 1;
+}
+
+/* Export Buttons */
+.export-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.export-btn.primary {
+  background-color: var(--primary);
+}
+.export-btn.primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.export-btn.secondary {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.export-btn.secondary:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Canvas Area */
+.canvas-wrapper {
+  flex-grow: 1;
+  background-color: var(--bg-canvas);
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  position: relative;
+  padding: 40px;
+}
+
+.canvas-container {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Fabric canvas wrapper adds inline styles, overriding to ensure centering is correct */
+.canvas-container {
+  margin: auto;
+}
