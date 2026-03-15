@@ -8,10 +8,19 @@ const thicknessValue = document.getElementById('thicknessValue');
 const fontSizeInput = document.getElementById('fontSize');
 const fontFamilySelect = document.getElementById('fontFamily');
 const fontPreview = document.getElementById('fontPreview');
+const boldBtn = document.getElementById('boldBtn');
+let isBold = false;
 
 // Font preview
 fontFamilySelect.addEventListener('change', () => {
     fontPreview.style.fontFamily = fontFamilySelect.value;
+});
+
+// Bold toggle
+boldBtn.addEventListener('click', () => {
+    isBold = !isBold;
+    boldBtn.classList.toggle('active', isBold);
+    fontPreview.style.fontWeight = isBold ? 'bold' : 'normal';
 });
 
 let currentTool = 'select';
@@ -152,7 +161,7 @@ function getDrawingBounds(drawing) {
     const { type, x1, y1, x2, y2, text, fontSize, fontFamily } = drawing;
 
     if (type === 'text') {
-        ctx.font = `${fontSize}px ${fontFamily || 'Arial'}`;
+        ctx.font = `${drawing.bold ? 'bold ' : ''}${fontSize}px ${fontFamily || 'Arial'}`;
         const lines = text.split('\n');
         const lineHeight = fontSize * 1.2;
         let maxWidth = 0;
@@ -224,7 +233,7 @@ function drawShape(drawing) {
         ctx.arc(x1, y1, radius, 0, 2 * Math.PI);
         ctx.stroke();
     } else if (type === 'text') {
-        ctx.font = `${fontSize}px ${fontFamily || 'Arial'}`;
+        ctx.font = `${drawing.bold ? 'bold ' : ''}${fontSize}px ${fontFamily || 'Arial'}`;
         const lines = text.split('\n');
         const lineHeight = fontSize * 1.2;
         lines.forEach((line, index) => {
@@ -588,7 +597,8 @@ document.getElementById('textOkBtn').addEventListener('click', () => {
             text: text,
             color: colorPicker.value,
             fontSize: parseInt(fontSizeInput.value),
-            fontFamily: fontFamilySelect.value
+            fontFamily: fontFamilySelect.value,
+            bold: isBold
         });
         redraw();
     }
