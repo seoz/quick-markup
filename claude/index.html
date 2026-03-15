@@ -110,6 +110,10 @@
             max-height: 100%;
         }
 
+        #canvas.select-mode {
+            cursor: default;
+        }
+
         .upload-zone {
             position: absolute;
             top: 50%;
@@ -163,6 +167,7 @@
 
             <div class="tool-group">
                 <span class="label">Tool:</span>
+                <button id="tool-select" class="tool-btn" data-tool="select">👆 Select</button>
                 <button id="tool-arrow" class="tool-btn" data-tool="arrow">➜ Arrow</button>
                 <button id="tool-rectangle" class="tool-btn" data-tool="rectangle">▭ Rectangle</button>
                 <button id="tool-circle" class="tool-btn" data-tool="circle">○ Circle</button>
@@ -218,12 +223,16 @@
         const thicknessValue = document.getElementById('thicknessValue');
         const fontSizeInput = document.getElementById('fontSize');
 
-        let currentTool = 'arrow';
+        let currentTool = 'select';
         let isDrawing = false;
         let startX, startY;
         let backgroundImage = null;
         let drawings = [];
         let currentDrawing = null;
+        let selectedDrawing = null;
+        let isDragging = false;
+        let dragOffsetX = 0;
+        let dragOffsetY = 0;
 
         // Tool selection
         document.querySelectorAll('.tool-btn').forEach(btn => {
@@ -231,11 +240,22 @@
                 document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 currentTool = e.target.dataset.tool;
+                selectedDrawing = null;
+
+                // Update cursor
+                if (currentTool === 'select') {
+                    canvas.classList.add('select-mode');
+                } else {
+                    canvas.classList.remove('select-mode');
+                }
+
+                redraw();
             });
         });
 
         // Set default tool
-        document.getElementById('tool-arrow').classList.add('active');
+        document.getElementById('tool-select').classList.add('active');
+        canvas.classList.add('select-mode');
 
         // Sync thickness slider and input
         thicknessSlider.addEventListener('input', (e) => {
@@ -298,9 +318,83 @@
             }
 
             // Draw all saved drawings
-            drawings.forEach(drawing => {
+            drawings.forEach((drawing, index) => {
                 drawShape(drawing);
+
+                // Draw selection highlight
+                if (selectedDrawing === index) {
+                    drawSelectionBox(drawing);
+                }
             });
+        }
+
+        // Draw selection box around selected shape
+        function drawSelectionBox(drawing) {
+            const bounds = getDrawingBounds(drawing);
+            if (!bounds) return;
+
+            const padding = 10;
+            ctx.strokeStyle = '#007bff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(
+                bounds.minX - padding,
+                bounds.minY - padding,
+                bounds.maxX - bounds.minX + padding * 2,
+                bounds.maxY - bounds.minY + padding * 2
+            );
+            ctx.setLineDash([]);
+        }
+
+        // Get bounding box of a drawing
+        function getDrawingBounds(drawing) {
+            const { type, x1, y1, x2, y2, text, fontSize } = drawing;
+
+            if (type === 'text') {
+                ctx.font = `${fontSize}px Arial`;
+                const metrics = ctx.measureText(text);
+                return {
+                    minX: x1,
+                    minY: y1 - fontSize,
+                    maxX: x1 + metrics.width,
+                    maxY: y1
+                };
+            } else if (type === 'circle') {
+                const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                return {
+                    minX: x1 - radius,
+                    minY: y1 - radius,
+                    maxX: x1 + radius,
+                    maxY: y1 + radius
+                };
+            } else if (type === 'pen') {
+                return {
+                    minX: Math.min(x1, x2),
+                    minY: Math.min(y1, y2),
+                    maxX: Math.max(x1, x2),
+                    maxY: Math.max(y1, y2)
+                };
+            } else {
+                // arrow, rectangle
+                return {
+                    minX: Math.min(x1, x2),
+                    minY: Math.min(y1, y2),
+                    maxX: Math.max(x1, x2),
+                    maxY: Math.max(y1, y2)
+                };
+            }
+        }
+
+        // Check if point is inside drawing bounds
+        function isPointInDrawing(drawing, x, y) {
+            const bounds = getDrawingBounds(drawing);
+            if (!bounds) return false;
+
+            const padding = 10;
+            return x >= bounds.minX - padding &&
+                   x <= bounds.maxX + padding &&
+                   y >= bounds.minY - padding &&
+                   y <= bounds.maxY + padding;
         }
 
         // Draw shape
@@ -372,70 +466,116 @@
             const pos = getMousePos(e);
             startX = pos.x;
             startY = pos.y;
-            isDrawing = true;
 
-            if (currentTool === 'text') {
-                const text = prompt('Enter text:');
-                if (text) {
-                    drawings.push({
-                        type: 'text',
-                        x1: startX,
-                        y1: startY,
-                        text: text,
-                        color: colorPicker.value,
-                        fontSize: parseInt(fontSizeInput.value)
-                    });
+            if (currentTool === 'select') {
+                // Check if clicking on a selected drawing first
+                if (selectedDrawing !== null && isPointInDrawing(drawings[selectedDrawing], pos.x, pos.y)) {
+                    isDragging = true;
+                    const drawing = drawings[selectedDrawing];
+                    dragOffsetX = pos.x - drawing.x1;
+                    dragOffsetY = pos.y - drawing.y1;
+                } else {
+                    // Find clicked drawing (reverse order to select top-most)
+                    selectedDrawing = null;
+                    for (let i = drawings.length - 1; i >= 0; i--) {
+                        if (isPointInDrawing(drawings[i], pos.x, pos.y)) {
+                            selectedDrawing = i;
+                            const drawing = drawings[i];
+                            dragOffsetX = pos.x - drawing.x1;
+                            dragOffsetY = pos.y - drawing.y1;
+                            isDragging = true;
+                            break;
+                        }
+                    }
                     redraw();
                 }
-                isDrawing = false;
-            } else if (currentTool === 'pen') {
-                currentDrawing = {
-                    type: 'pen',
-                    x1: startX,
-                    y1: startY,
-                    x2: startX,
-                    y2: startY,
-                    color: colorPicker.value,
-                    thickness: parseInt(thicknessValue.value)
-                };
+            } else {
+                isDrawing = true;
+
+                if (currentTool === 'text') {
+                    const text = prompt('Enter text:');
+                    if (text) {
+                        drawings.push({
+                            type: 'text',
+                            x1: startX,
+                            y1: startY,
+                            text: text,
+                            color: colorPicker.value,
+                            fontSize: parseInt(fontSizeInput.value)
+                        });
+                        redraw();
+                    }
+                    isDrawing = false;
+                } else if (currentTool === 'pen') {
+                    currentDrawing = {
+                        type: 'pen',
+                        x1: startX,
+                        y1: startY,
+                        x2: startX,
+                        y2: startY,
+                        color: colorPicker.value,
+                        thickness: parseInt(thicknessValue.value)
+                    };
+                }
             }
         });
 
         canvas.addEventListener('mousemove', (e) => {
-            if (!isDrawing || !backgroundImage) return;
+            if (!backgroundImage) return;
 
             const pos = getMousePos(e);
 
-            if (currentTool === 'pen') {
-                // For pen tool, save each segment
-                drawings.push({
-                    type: 'pen',
-                    x1: startX,
-                    y1: startY,
-                    x2: pos.x,
-                    y2: pos.y,
-                    color: colorPicker.value,
-                    thickness: parseInt(thicknessValue.value)
-                });
-                startX = pos.x;
-                startY = pos.y;
+            if (currentTool === 'select' && isDragging && selectedDrawing !== null) {
+                // Move the selected drawing
+                const drawing = drawings[selectedDrawing];
+                const deltaX = pos.x - dragOffsetX - drawing.x1;
+                const deltaY = pos.y - dragOffsetY - drawing.y1;
+
+                drawing.x1 += deltaX;
+                drawing.y1 += deltaY;
+                if (drawing.x2 !== undefined) {
+                    drawing.x2 += deltaX;
+                    drawing.y2 += deltaY;
+                }
+
                 redraw();
-            } else {
-                // For other tools, show preview
-                redraw();
-                drawShape({
-                    type: currentTool,
-                    x1: startX,
-                    y1: startY,
-                    x2: pos.x,
-                    y2: pos.y,
-                    color: colorPicker.value,
-                    thickness: parseInt(thicknessValue.value)
-                });
+            } else if (isDrawing) {
+                if (currentTool === 'pen') {
+                    // For pen tool, save each segment
+                    drawings.push({
+                        type: 'pen',
+                        x1: startX,
+                        y1: startY,
+                        x2: pos.x,
+                        y2: pos.y,
+                        color: colorPicker.value,
+                        thickness: parseInt(thicknessValue.value)
+                    });
+                    startX = pos.x;
+                    startY = pos.y;
+                    redraw();
+                } else {
+                    // For other tools, show preview
+                    redraw();
+                    drawShape({
+                        type: currentTool,
+                        x1: startX,
+                        y1: startY,
+                        x2: pos.x,
+                        y2: pos.y,
+                        color: colorPicker.value,
+                        thickness: parseInt(thicknessValue.value)
+                    });
+                }
             }
         });
 
         canvas.addEventListener('mouseup', (e) => {
+            if (currentTool === 'select') {
+                isDragging = false;
+                return;
+            }
+
             if (!isDrawing || !backgroundImage || currentTool === 'text') return;
 
             const pos = getMousePos(e);
@@ -454,6 +594,19 @@
             }
 
             isDrawing = false;
+        });
+
+        // Delete selected drawing on Delete/Backspace key
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedDrawing !== null && currentTool === 'select') {
+                // Check if we're not typing in an input field
+                if (document.activeElement.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    drawings.splice(selectedDrawing, 1);
+                    selectedDrawing = null;
+                    redraw();
+                }
+            }
         });
 
         // Clear all
