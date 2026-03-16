@@ -470,6 +470,9 @@ function onMouseUp(o) {
     // Create arrow head and group it
     const pointer = canvas.getPointer(o.e);
     
+    // Update line end to final position
+    activeShape.set({ x2: pointer.x, y2: pointer.y });
+    
     // If it's too short, just remove it
     const dist = Math.sqrt(Math.pow(pointer.x - startX, 2) + Math.pow(pointer.y - startY, 2));
     if (dist < 5) {
@@ -497,8 +500,21 @@ function onMouseUp(o) {
     const line = activeShape;
     canvas.remove(line);
 
-    // Adjust line end to not poke out of triangle
-    const group = new fabric.Group([line, head], {
+    // Create a mathematically sound line for the final group,
+    // explicitly centering it to bypass Fabric's bounding-box diagonal offset bug in Groups.
+    const finalLine = new fabric.Line([startX, startY, pointer.x, pointer.y], {
+      stroke: currentColor,
+      strokeWidth: currentThickness,
+      originX: 'center',
+      originY: 'center',
+      left: (startX + pointer.x) / 2,
+      top: (startY + pointer.y) / 2,
+      selectable: false,
+      evented: false
+    });
+
+    // Grouping original objects with skewed latent bounding-box offsets causes misalignment.
+    const group = new fabric.Group([finalLine, head], {
       selectable: false,
       evented: false
     });
