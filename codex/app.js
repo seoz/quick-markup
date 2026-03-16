@@ -43,6 +43,7 @@ const state = {
   imageSrc: "",
   imageWidth: 0,
   imageHeight: 0,
+  displayScale: 1,
   padding: { top: 0, right: 0, bottom: 0, left: 0 },
   objects: [],
   selectedId: null,
@@ -171,6 +172,18 @@ function getCanvasSize() {
   };
 }
 
+function updateDisplayScale(canvasWidth, canvasHeight) {
+  const scrollerStyles = window.getComputedStyle(elements.canvasScroller);
+  const stageStyles = window.getComputedStyle(elements.canvasStage);
+  const scrollerPaddingX = (parseFloat(scrollerStyles.paddingLeft) || 0) + (parseFloat(scrollerStyles.paddingRight) || 0);
+  const scrollerPaddingY = (parseFloat(scrollerStyles.paddingTop) || 0) + (parseFloat(scrollerStyles.paddingBottom) || 0);
+  const stagePaddingX = (parseFloat(stageStyles.paddingLeft) || 0) + (parseFloat(stageStyles.paddingRight) || 0);
+  const stagePaddingY = (parseFloat(stageStyles.paddingTop) || 0) + (parseFloat(stageStyles.paddingBottom) || 0);
+  const availableWidth = Math.max(320, elements.canvasScroller.clientWidth - scrollerPaddingX - stagePaddingX);
+  const availableHeight = Math.max(240, elements.canvasScroller.clientHeight - scrollerPaddingY - stagePaddingY);
+  state.displayScale = Math.min(1, availableWidth / canvasWidth, availableHeight / canvasHeight);
+}
+
 function getImageBounds() {
   return {
     x: state.padding.left,
@@ -191,10 +204,11 @@ function refreshLayout() {
   }
 
   const { width, height } = getCanvasSize();
+  updateDisplayScale(width, height);
   elements.canvas.width = width;
   elements.canvas.height = height;
-  elements.canvas.style.width = `${width}px`;
-  elements.canvas.style.height = `${height}px`;
+  elements.canvas.style.width = `${Math.max(1, Math.round(width * state.displayScale))}px`;
+  elements.canvas.style.height = `${Math.max(1, Math.round(height * state.displayScale))}px`;
   render();
   elements.imageMeta.textContent = `${state.imageWidth} × ${state.imageHeight}px`;
   updateActionState();
@@ -837,3 +851,4 @@ window.addEventListener("keydown", async (event) => {
 initializeTheme();
 syncPaddingInputs();
 updateActionState();
+window.addEventListener("resize", refreshLayout);
