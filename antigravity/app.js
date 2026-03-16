@@ -23,6 +23,32 @@ const btnReset = document.getElementById('btn-reset');
 const btnCopy = document.getElementById('btn-copy');
 const btnDownload = document.getElementById('btn-download');
 
+// Modal Elements
+const confirmModal = document.getElementById('confirm-modal');
+const modalTitle = document.getElementById('modal-title');
+const modalDesc = document.getElementById('modal-desc');
+const modalCancel = document.getElementById('modal-cancel');
+const modalConfirm = document.getElementById('modal-confirm');
+let pendingConfirmAction = null;
+
+function showConfirmDialog(title, desc, onConfirm) {
+  modalTitle.textContent = title;
+  modalDesc.textContent = desc;
+  pendingConfirmAction = onConfirm;
+  confirmModal.classList.remove('hidden');
+}
+
+modalCancel.addEventListener('click', () => {
+  confirmModal.classList.add('hidden');
+  pendingConfirmAction = null;
+});
+
+modalConfirm.addEventListener('click', () => {
+  if (pendingConfirmAction) pendingConfirmAction();
+  confirmModal.classList.add('hidden');
+  pendingConfirmAction = null;
+});
+
 // State
 let canvas = null;
 let currentTool = 'select'; // select, draw, arrow, rect, circle, text
@@ -516,14 +542,32 @@ function deleteSelected() {
 }
 
 btnUndo.addEventListener('click', undo);
-btnDelete.addEventListener('click', deleteSelected);
 
-// Reset
-btnReset.addEventListener('click', () => {
-  if (confirm('Are you sure you want to discard all markups and start over?')) {
-    canvas.clear();
-    setupCanvasForImage(true);
+btnDelete.addEventListener('click', () => {
+  if (!canvas) return;
+  const activeObjects = canvas.getActiveObjects();
+  if (activeObjects.length) {
+    showConfirmDialog('Delete Selected', 'Are you sure you want to delete the selected item(s)?', () => {
+      deleteSelected();
+    });
+  } else {
+    // Treat as "markup reset" if nothing is selected
+    showConfirmDialog('Clear All Markups', 'Are you sure you want to discard all drawn markups?', () => {
+      canvas.clear();
+      setupCanvasForImage(true);
+    });
   }
+});
+
+// Reset image and start from scratch
+btnReset.addEventListener('click', () => {
+  showConfirmDialog('Start From Scratch', 'Are you sure you want to discard the image and all markups?', () => {
+    canvas.clear();
+    originalImage = null;
+    appContainer.classList.add('hidden');
+    dropZone.classList.remove('hidden');
+    fileInput.value = ''; // reset file input so the same file can be uploaded again
+  });
 });
 
 // Expand Padding

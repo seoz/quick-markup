@@ -143,6 +143,17 @@
     </main>
   </div>
 
+  <div class="modal-overlay hidden" id="confirm-modal">
+    <div class="modal-content">
+      <h3 id="modal-title">Confirm Action</h3>
+      <p id="modal-desc">Are you sure you want to proceed?</p>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="export-btn secondary">Cancel</button>
+        <button id="modal-confirm" class="export-btn primary" style="background-color: var(--danger);">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <script src="fabric.min.js"></script>
   <script src="app.js"></script>
 </body>
