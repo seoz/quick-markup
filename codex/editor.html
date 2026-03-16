@@ -24,12 +24,14 @@
             <h2>Import</h2>
             <span id="imageMeta" class="panel-note">No image loaded</span>
           </div>
-          <label class="file-input">
-            <input id="fileInput" type="file" accept="image/*" />
-            <span>Upload image</span>
-          </label>
-          <button id="pasteButton" class="secondary-button" type="button">Paste image</button>
-          <p class="panel-note">You can also press <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>V</kbd>.</p>
+          <div class="compact-grid compact-grid-2">
+            <label class="file-input compact-input">
+              <input id="fileInput" type="file" accept="image/*" />
+              <span>Upload image</span>
+            </label>
+            <button id="pasteButton" class="secondary-button" type="button">Paste image</button>
+          </div>
+          <p class="panel-note compact-note">Paste also works with <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>V</kbd>.</p>
         </section>
 
         <section class="panel">
@@ -37,7 +39,7 @@
             <h2>Tools</h2>
             <button id="deleteButton" class="ghost-button danger" type="button">Delete selected</button>
           </div>
-          <div id="toolGrid" class="tool-grid" role="radiogroup" aria-label="Markup tools">
+          <div id="toolGrid" class="tool-grid compact-tools" role="radiogroup" aria-label="Markup tools">
             <button class="tool-button active" data-tool="select" type="button">Select</button>
             <button class="tool-button" data-tool="arrow" type="button">Arrow</button>
             <button class="tool-button" data-tool="line" type="button">Line</button>
@@ -51,32 +53,38 @@
           <div class="panel-header">
             <h2>Style</h2>
           </div>
-          <div class="control-group">
-            <label for="colorInput">Color</label>
-            <input id="colorInput" type="color" value="#ff5a36" />
-          </div>
-          <div class="control-group">
-            <label for="strokeInput">Thickness</label>
-            <input id="strokeInput" type="range" min="1" max="24" value="4" />
-            <span id="strokeValue" class="control-value">4 px</span>
-          </div>
-          <div class="control-group">
-            <label for="fontSizeInput">Text size</label>
-            <input id="fontSizeInput" type="range" min="12" max="96" value="28" />
-            <span id="fontSizeValue" class="control-value">28 px</span>
-          </div>
-          <div class="control-group">
-            <label for="fontFamilySelect">Font</label>
-            <select id="fontFamilySelect">
-              <option value="Arial, sans-serif">Arial</option>
-              <option value="'Helvetica Neue', Arial, sans-serif">Helvetica Neue</option>
-              <option value="Verdana, sans-serif">Verdana</option>
-              <option value="Tahoma, sans-serif">Tahoma</option>
-              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="'Times New Roman', serif">Times New Roman</option>
-              <option value="'Courier New', monospace">Courier New</option>
-            </select>
+          <div class="style-grid">
+            <div class="control-group compact-field">
+              <label for="colorInput">Color</label>
+              <input id="colorInput" type="color" value="#ff5a36" />
+            </div>
+            <div class="control-group compact-field">
+              <label for="fontFamilySelect">Font</label>
+              <select id="fontFamilySelect">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="'Helvetica Neue', Arial, sans-serif">Helvetica Neue</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+                <option value="Tahoma, sans-serif">Tahoma</option>
+                <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value="'Times New Roman', serif">Times New Roman</option>
+                <option value="'Courier New', monospace">Courier New</option>
+              </select>
+            </div>
+            <div class="control-group compact-field range-field">
+              <div class="control-label-row">
+                <label for="strokeInput">Thickness</label>
+                <span id="strokeValue" class="control-value">4 px</span>
+              </div>
+              <input id="strokeInput" type="range" min="1" max="24" value="4" />
+            </div>
+            <div class="control-group compact-field range-field">
+              <div class="control-label-row">
+                <label for="fontSizeInput">Text size</label>
+                <span id="fontSizeValue" class="control-value">28 px</span>
+              </div>
+              <input id="fontSizeInput" type="range" min="12" max="96" value="28" />
+            </div>
           </div>
         </section>
 
@@ -84,27 +92,27 @@
           <div class="panel-header">
             <h2>Canvas</h2>
           </div>
-          <div class="padding-grid">
+          <div class="padding-grid compact-padding">
             <label>Top <input id="paddingTop" type="number" min="0" step="10" value="0" /></label>
             <label>Right <input id="paddingRight" type="number" min="0" step="10" value="0" /></label>
             <label>Bottom <input id="paddingBottom" type="number" min="0" step="10" value="0" /></label>
             <label>Left <input id="paddingLeft" type="number" min="0" step="10" value="0" /></label>
           </div>
           <button id="applyPaddingButton" class="secondary-button" type="button">Apply padding</button>
-          <p class="panel-note">Add extra space outside the original image for callouts and notes.</p>
+          <p class="panel-note compact-note">Add space outside the image for callouts and notes.</p>
         </section>
 
         <section class="panel">
           <div class="panel-header">
             <h2>Actions</h2>
           </div>
-          <div class="action-grid">
+          <div class="action-grid compact-actions">
             <button id="undoButton" class="secondary-button" type="button">Undo</button>
             <button id="copyButton" class="secondary-button" type="button">Copy</button>
             <button id="downloadButton" class="primary-button" type="button">Download</button>
             <button id="resetButton" class="ghost-button danger" type="button">Reset</button>
           </div>
-          <p class="panel-note">Undo supports up to 50 history states and also works with <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Z</kbd>.</p>
+          <p class="panel-note compact-note">Undo keeps 50 states and supports <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Z</kbd>.</p>
         </section>
       </aside>
 

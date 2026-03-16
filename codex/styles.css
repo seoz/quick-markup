@@ -17,6 +17,9 @@
   --grid: rgba(77, 94, 123, 0.08);
   --button-text: #142033;
   --font-ui: "Avenir Next", "Segoe UI", sans-serif;
+  --shell-padding: clamp(10px, 1.4vh, 18px);
+  --panel-gap: clamp(8px, 0.9vh, 12px);
+  --card-padding: clamp(10px, 1.1vh, 16px);
 }
 
 body[data-theme="dark"] {
@@ -54,6 +57,7 @@ body {
 
 body {
   min-height: 100vh;
+  overflow: hidden;
 }
 
 button,
@@ -82,15 +86,19 @@ kbd {
 .app-shell {
   display: grid;
   grid-template-columns: 360px 1fr;
-  min-height: 100vh;
+  height: 100vh;
 }
 
 .sidebar {
-  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--panel-gap);
+  height: 100vh;
+  padding: var(--shell-padding);
   border-right: 1px solid var(--panel-border);
   background: var(--bg-elevated);
   backdrop-filter: blur(18px);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .brand-card,
@@ -109,11 +117,10 @@ kbd {
 .brand-card {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
   align-items: flex-start;
-  padding: 22px;
+  padding: var(--card-padding);
   border-radius: var(--radius-lg);
-  margin-bottom: 18px;
 }
 
 .brand-card h1,
@@ -125,33 +132,56 @@ kbd {
 }
 
 .eyebrow {
-  margin: 0 0 6px;
+  margin: 0 0 4px;
   color: var(--accent);
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
+.brand-card h1 {
+  font-size: 1.28rem;
+  line-height: 1.1;
+}
+
 .panel {
   border-radius: var(--radius-md);
-  padding: 18px;
-  margin-bottom: 16px;
+  padding: clamp(10px, 1vh, 14px);
+  margin-bottom: 0;
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: clamp(6px, 0.7vh, 10px);
+}
+
+.panel h2 {
+  font-size: 0.96rem;
 }
 
 .panel-note,
 #statusText {
   color: var(--text-soft);
   margin: 0;
-  line-height: 1.45;
+  line-height: 1.3;
+  font-size: 0.79rem;
+}
+
+.compact-note {
+  margin-top: 8px;
+}
+
+.compact-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.compact-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .file-input {
@@ -160,12 +190,15 @@ kbd {
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 48px;
-  margin-bottom: 12px;
+  min-height: 40px;
   border: 1px dashed rgba(127, 146, 177, 0.38);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.05);
   overflow: hidden;
+}
+
+.compact-input {
+  margin-bottom: 0;
 }
 
 .file-input input {
@@ -179,30 +212,64 @@ kbd {
 .action-grid,
 .padding-grid {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .tool-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.compact-tools {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .action-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.compact-actions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .padding-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+.compact-padding {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .padding-grid label,
 .control-group {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .control-group + .control-group {
-  margin-top: 14px;
+  margin-top: 0;
+}
+
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+
+.compact-field label,
+.padding-grid label {
+  font-size: 0.78rem;
+}
+
+.control-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.range-field {
+  align-content: start;
 }
 
 input[type="number"],
@@ -216,23 +283,23 @@ input[type="number"],
 select,
 textarea {
   border: 1px solid var(--panel-border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: rgba(127, 146, 177, 0.08);
   color: var(--text);
-  padding: 12px 14px;
+  padding: 10px 12px;
 }
 
 input[type="color"] {
   width: 100%;
-  height: 46px;
-  padding: 4px;
-  border-radius: 14px;
+  height: 40px;
+  padding: 3px;
+  border-radius: 12px;
   border: 1px solid var(--panel-border);
   background: rgba(127, 146, 177, 0.08);
 }
 
 .control-value {
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   color: var(--text-soft);
 }
 
@@ -240,9 +307,10 @@ input[type="color"] {
 .secondary-button,
 .ghost-button,
 .tool-button {
-  min-height: 44px;
-  border-radius: 14px;
-  padding: 0 14px;
+  min-height: 38px;
+  border-radius: 12px;
+  padding: 0 10px;
+  font-size: 0.82rem;
   transition: transform 150ms ease, background 150ms ease, border-color 150ms ease, opacity 150ms ease;
 }
 
@@ -285,7 +353,8 @@ input[type="color"] {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 24px;
+  min-height: 0;
+  padding: var(--shell-padding);
 }
 
 .workspace-header {
@@ -293,9 +362,9 @@ input[type="color"] {
   justify-content: space-between;
   align-items: center;
   gap: 12px;
-  padding: 20px 22px;
+  padding: var(--card-padding);
   border-radius: var(--radius-lg);
-  margin-bottom: 18px;
+  margin-bottom: var(--panel-gap);
 }
 
 .empty-state {
@@ -319,6 +388,7 @@ input[type="color"] {
 
 .canvas-scroller {
   flex: 1;
+  min-height: 0;
   overflow: auto;
   border-radius: 28px;
   padding: 18px;
@@ -388,13 +458,52 @@ input[type="color"] {
   padding: 24px;
 }
 
+@media (max-height: 840px) {
+  .brand-card h1 {
+    font-size: 1.14rem;
+  }
+
+  .panel {
+    padding: 9px 10px;
+  }
+
+  .primary-button,
+  .secondary-button,
+  .ghost-button,
+  .tool-button {
+    min-height: 34px;
+    font-size: 0.77rem;
+  }
+
+  input[type="number"],
+  select,
+  textarea {
+    padding: 8px 10px;
+  }
+}
+
 @media (max-width: 980px) {
+  body {
+    overflow: auto;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
+    height: auto;
   }
 
   .sidebar {
+    height: auto;
     border-right: none;
     border-bottom: 1px solid var(--panel-border);
+    overflow: visible;
+  }
+
+  .compact-tools,
+  .compact-actions,
+  .compact-padding,
+  .style-grid,
+  .compact-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
