@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "Quick Image Markup",
+  "version": "1.0.0",
+  "description": "A desktop-friendly image markup tool for Chrome with arrows, shapes, text, colors, padding, export, and undo.",
+  "permissions": [
+    "clipboardRead",
+    "clipboardWrite"
+  ],
+  "action": {
+    "default_title": "Open Quick Image Markup"
+  },
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "editor.html",
+        "styles.css",
+        "app.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

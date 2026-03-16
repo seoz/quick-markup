@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quick Image Markup</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-card">
+          <div>
+            <p class="eyebrow">Chrome Extension</p>
+            <h1>Quick Image Markup</h1>
+          </div>
+          <button id="themeToggle" class="ghost-button" type="button" aria-label="Toggle theme">
+            Dark mode
+          </button>
+        </div>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Import</h2>
+            <span id="imageMeta" class="panel-note">No image loaded</span>
+          </div>
+          <label class="file-input">
+            <input id="fileInput" type="file" accept="image/*" />
+            <span>Upload image</span>
+          </label>
+          <button id="pasteButton" class="secondary-button" type="button">Paste image</button>
+          <p class="panel-note">You can also press <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>V</kbd>.</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Tools</h2>
+            <button id="deleteButton" class="ghost-button danger" type="button">Delete selected</button>
+          </div>
+          <div id="toolGrid" class="tool-grid" role="radiogroup" aria-label="Markup tools">
+            <button class="tool-button active" data-tool="select" type="button">Select</button>
+            <button class="tool-button" data-tool="arrow" type="button">Arrow</button>
+            <button class="tool-button" data-tool="line" type="button">Line</button>
+            <button class="tool-button" data-tool="rect" type="button">Rectangle</button>
+            <button class="tool-button" data-tool="ellipse" type="button">Circle</button>
+            <button class="tool-button" data-tool="text" type="button">Text</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Style</h2>
+          </div>
+          <div class="control-group">
+            <label for="colorInput">Color</label>
+            <input id="colorInput" type="color" value="#ff5a36" />
+          </div>
+          <div class="control-group">
+            <label for="strokeInput">Thickness</label>
+            <input id="strokeInput" type="range" min="1" max="24" value="4" />
+            <span id="strokeValue" class="control-value">4 px</span>
+          </div>
+          <div class="control-group">
+            <label for="fontSizeInput">Text size</label>
+            <input id="fontSizeInput" type="range" min="12" max="96" value="28" />
+            <span id="fontSizeValue" class="control-value">28 px</span>
+          </div>
+          <div class="control-group">
+            <label for="fontFamilySelect">Font</label>
+            <select id="fontFamilySelect">
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="'Helvetica Neue', Arial, sans-serif">Helvetica Neue</option>
+              <option value="Verdana, sans-serif">Verdana</option>
+              <option value="Tahoma, sans-serif">Tahoma</option>
+              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Times New Roman', serif">Times New Roman</option>
+              <option value="'Courier New', monospace">Courier New</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Canvas</h2>
+          </div>
+          <div class="padding-grid">
+            <label>Top <input id="paddingTop" type="number" min="0" step="10" value="0" /></label>
+            <label>Right <input id="paddingRight" type="number" min="0" step="10" value="0" /></label>
+            <label>Bottom <input id="paddingBottom" type="number" min="0" step="10" value="0" /></label>
+            <label>Left <input id="paddingLeft" type="number" min="0" step="10" value="0" /></label>
+          </div>
+          <button id="applyPaddingButton" class="secondary-button" type="button">Apply padding</button>
+          <p class="panel-note">Add extra space outside the original image for callouts and notes.</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Actions</h2>
+          </div>
+          <div class="action-grid">
+            <button id="undoButton" class="secondary-button" type="button">Undo</button>
+            <button id="copyButton" class="secondary-button" type="button">Copy</button>
+            <button id="downloadButton" class="primary-button" type="button">Download</button>
+            <button id="resetButton" class="ghost-button danger" type="button">Reset</button>
+          </div>
+          <p class="panel-note">Undo supports up to 50 history states and also works with <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Z</kbd>.</p>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="workspace-header">
+          <div>
+            <h2>Editor</h2>
+            <p id="statusText">Upload or paste an image to start annotating.</p>
+          </div>
+        </header>
+
+        <div id="emptyState" class="empty-state">
+          <div class="empty-art"></div>
+          <h3>Drop in an image and start marking it up</h3>
+          <p>Use arrows, shapes, text, and padding while keeping the original export quality intact.</p>
+        </div>
+
+        <div id="canvasScroller" class="canvas-scroller hidden">
+          <div id="canvasStage" class="canvas-stage">
+            <canvas id="editorCanvas"></canvas>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div id="textEditor" class="text-editor hidden">
+      <textarea id="textInput" rows="4" placeholder="Type your text here"></textarea>
+      <div class="text-editor-actions">
+        <button id="cancelTextButton" class="ghost-button" type="button">Cancel</button>
+        <button id="saveTextButton" class="primary-button" type="button">Add text</button>
+      </div>
+    </div>
+
+    <div id="confirmModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal-card">
+        <h2 id="confirmTitle">Reset all edits?</h2>
+        <p>This will remove the current image, markup objects, and history so you can start fresh.</p>
+        <div class="modal-actions">
+          <button id="cancelResetButton" class="ghost-button" type="button">Cancel</button>
+          <button id="confirmResetButton" class="primary-button danger-fill" type="button">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
