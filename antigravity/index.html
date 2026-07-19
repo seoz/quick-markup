@@ -48,6 +48,12 @@
           <button class="tool-btn" data-tool="text" title="Text">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg>
           </button>
+          <button class="tool-btn" data-tool="blur" title="Blur Area">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z"/></svg>
+          </button>
+          <button class="tool-btn" data-tool="mosaic" title="Mosaic (Pixelate) Area">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+          </button>
         </div>
       </div>
 
@@ -82,7 +88,7 @@
         </div>
 
         <div class="prop-group">
-          <label>Thickness: <span id="thickness-val">10</span>px</label>
+          <label id="thickness-label">Thickness: <span id="thickness-val">10</span>px</label>
           <input type="range" id="thickness-slider" min="1" max="50" value="10">
         </div>
 

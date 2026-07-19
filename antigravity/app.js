@@ -10,7 +10,6 @@ const toolBtns = document.querySelectorAll('.tool-btn');
 const colorPicker = document.getElementById('color-picker');
 const swatches = document.querySelectorAll('.swatch');
 const thicknessSlider = document.getElementById('thickness-slider');
-const thicknessVal = document.getElementById('thickness-val');
 const fontPropGroup = document.getElementById('font-prop-group');
 const fontSelect = document.getElementById('font-select');
 const btnBold = document.getElementById('btn-bold');
@@ -76,7 +75,7 @@ function saveHistory() {
   
   const state = {
     padding: canvasPadding,
-    objects: canvas.getObjects().map(o => o.toObject(['selectable', 'evented']))
+    objects: canvas.getObjects().map(o => o.toObject(['selectable', 'evented', 'customType', 'effectIntensity', 'src']))
   };
   
   if (undoStack.length > 0) {
@@ -131,10 +130,26 @@ function initFabric() {
   canvas.on('mouse:up', onMouseUp);
   canvas.on('selection:created', onSelection);
   canvas.on('selection:updated', onSelection);
-  canvas.on('selection:cleared', () => { fontPropGroup.style.display = currentTool === 'text' ? 'block' : 'none'; });
+  canvas.on('selection:cleared', () => { 
+    fontPropGroup.style.display = currentTool === 'text' ? 'block' : 'none'; 
+    updateThicknessSliderLabel();
+    canvas.getObjects().forEach(o => {
+      if (o.customType === 'blur' || o.customType === 'mosaic') {
+        updateBlurMosaicObject(o);
+      }
+    });
+    canvas.renderAll();
+  });
   
   canvas.on('path:created', () => saveHistory());
-  canvas.on('object:modified', () => saveHistory());
+  canvas.on('object:modified', (e) => {
+    const obj = e.target;
+    if (obj && (obj.customType === 'blur' || obj.customType === 'mosaic')) {
+      updateBlurMosaicObject(obj);
+      canvas.renderAll();
+    }
+    saveHistory();
+  });
   canvas.on('text:changed', () => saveHistory());
 }
 
@@ -262,12 +277,48 @@ toolBtns.forEach(btn => {
   });
 });
 
+function updateThicknessSliderLabel() {
+  const thicknessLabel = document.getElementById('thickness-label');
+  if (!thicknessLabel) return;
+  
+  const activeObj = canvas?.getActiveObject();
+  if (activeObj && activeObj.customType === 'blur') {
+    thicknessLabel.innerHTML = `Blur Intensity: <span id="thickness-val">${activeObj.effectIntensity}</span>px`;
+    thicknessSlider.value = activeObj.effectIntensity;
+    thicknessSlider.min = 1;
+    thicknessSlider.max = 50;
+  } else if (activeObj && activeObj.customType === 'mosaic') {
+    thicknessLabel.innerHTML = `Block Size: <span id="thickness-val">${activeObj.effectIntensity}</span>px`;
+    thicknessSlider.value = activeObj.effectIntensity;
+    thicknessSlider.min = 2;
+    thicknessSlider.max = 50;
+  } else {
+    // Base it on currentTool
+    if (currentTool === 'blur') {
+      thicknessLabel.innerHTML = `Blur Intensity: <span id="thickness-val">${currentThickness}</span>px`;
+      thicknessSlider.min = 1;
+      thicknessSlider.max = 50;
+    } else if (currentTool === 'mosaic') {
+      thicknessLabel.innerHTML = `Block Size: <span id="thickness-val">${currentThickness}</span>px`;
+      thicknessSlider.min = 2;
+      thicknessSlider.max = 50;
+    } else {
+      thicknessLabel.innerHTML = `Thickness: <span id="thickness-val">${currentThickness}</span>px`;
+      thicknessSlider.min = 1;
+      thicknessSlider.max = 50;
+    }
+    thicknessSlider.value = currentThickness;
+  }
+}
+
 function setTool(tool) {
   currentTool = tool;
   toolBtns.forEach(b => b.classList.remove('active'));
   document.querySelector(`.tool-btn[data-tool="${tool}"]`).classList.add('active');
 
   fontPropGroup.style.display = (tool === 'text') ? 'block' : 'none';
+
+  updateThicknessSliderLabel();
 
   if (!canvas) return;
 
@@ -331,12 +382,22 @@ function setColor(color) {
 thicknessSlider.addEventListener('input', (e) => {
   const val = parseInt(e.target.value, 10);
   currentThickness = val;
-  thicknessVal.textContent = val;
+  const valEl = document.getElementById('thickness-val');
+  if (valEl) {
+    valEl.textContent = val;
+  }
   if (canvas && canvas.isDrawingMode) {
     canvas.freeDrawingBrush.width = val;
   }
   const activeObj = canvas?.getActiveObject();
   if (activeObj) {
+     if (activeObj.customType === 'blur' || activeObj.customType === 'mosaic') {
+       activeObj.effectIntensity = val;
+       updateBlurMosaicObject(activeObj);
+       canvas.renderAll();
+       saveHistory();
+       return;
+     }
      if (activeObj.type === 'i-text') return; // Do not apply thickness to text
      if (activeObj.type === 'group') {
        activeObj._objects.forEach(o => {
@@ -375,6 +436,102 @@ btnBold.addEventListener('click', () => {
     saveHistory();
   }
 });
+
+// Helper for generating Blur or Mosaic elements
+function generateBlurredOrPixelatedElement(sx, sy, sw, sh, type, intensity) {
+  if (!originalImage) return document.createElement('canvas');
+  
+  const imgEl = originalImage.getElement();
+  const imgW = originalImage.width;
+  const imgH = originalImage.height;
+  
+  // Clamp source coordinates to image boundaries
+  sx = Math.max(0, Math.min(imgW - 1, sx));
+  sy = Math.max(0, Math.min(imgH - 1, sy));
+  sw = Math.max(1, Math.min(imgW - sx, sw));
+  sh = Math.max(1, Math.min(imgH - sy, sh));
+  
+  const outputCanvas = document.createElement('canvas');
+  outputCanvas.width = sw;
+  outputCanvas.height = sh;
+  const ctx = outputCanvas.getContext('2d');
+  
+  if (type === 'blur') {
+    // To avoid soft/transparent edges, we crop a padded area, blur it, and extract the center.
+    const pad = Math.min(intensity * 2, 50);
+    
+    let psx = Math.max(0, sx - pad);
+    let psy = Math.max(0, sy - pad);
+    let psw = Math.min(imgW - psx, sw + (sx - psx) + pad);
+    let psh = Math.min(imgH - psy, sh + (sy - psy) + pad);
+    
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = psw;
+    tempCanvas.height = psh;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(imgEl, psx, psy, psw, psh, 0, 0, psw, psh);
+    
+    const blurCanvas = document.createElement('canvas');
+    blurCanvas.width = psw;
+    blurCanvas.height = psh;
+    const blurCtx = blurCanvas.getContext('2d');
+    blurCtx.filter = `blur(${intensity}px)`;
+    blurCtx.drawImage(tempCanvas, 0, 0);
+    
+    const dx = sx - psx;
+    const dy = sy - psy;
+    
+    ctx.drawImage(blurCanvas, dx, dy, sw, sh, 0, 0, sw, sh);
+  } else if (type === 'mosaic') {
+    const blockSize = Math.max(2, intensity);
+    
+    const smallCanvas = document.createElement('canvas');
+    const smallW = Math.max(1, Math.round(sw / blockSize));
+    const smallH = Math.max(1, Math.round(sh / blockSize));
+    smallCanvas.width = smallW;
+    smallCanvas.height = smallH;
+    const smallCtx = smallCanvas.getContext('2d');
+    smallCtx.drawImage(imgEl, sx, sy, sw, sh, 0, 0, smallW, smallH);
+    
+    ctx.imageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.msImageSmoothingEnabled = false;
+    
+    ctx.drawImage(smallCanvas, 0, 0, smallW, smallH, 0, 0, sw, sh);
+  }
+  
+  return outputCanvas;
+}
+
+// Regenerates cropped and processed visual image for blur/mosaic lens
+function updateBlurMosaicObject(obj) {
+  if (!obj || (obj.customType !== 'blur' && obj.customType !== 'mosaic')) return;
+  
+  const left = obj.left;
+  const top = obj.top;
+  const width = obj.width * obj.scaleX;
+  const height = obj.height * obj.scaleY;
+  
+  const sx = left - canvasPadding;
+  const sy = top - canvasPadding;
+  
+  const intensity = obj.effectIntensity || 10;
+  
+  const newImgEl = generateBlurredOrPixelatedElement(sx, sy, width, height, obj.customType, intensity);
+  
+  obj.setElement(newImgEl);
+  obj.set({
+    width: width,
+    height: height,
+    scaleX: 1,
+    scaleY: 1
+  });
+  
+  // Set the serialized source to the new data URL so it undoes/exports properly
+  obj.src = newImgEl.toDataURL();
+  obj.setCoords();
+}
 
 // Drawing logic
 function onMouseDown(o) {
@@ -439,6 +596,20 @@ function onMouseDown(o) {
     setTool('select'); // auto switch to select
     isDrawing = false;
     saveHistory();
+  } else if (currentTool === 'blur' || currentTool === 'mosaic') {
+    activeShape = new fabric.Rect({
+      left: startX,
+      top: startY,
+      width: 0,
+      height: 0,
+      fill: 'rgba(255, 255, 255, 0.1)',
+      stroke: '#3b82f6',
+      strokeWidth: 1,
+      strokeDashArray: [5, 5],
+      selectable: false,
+      evented: false
+    });
+    canvas.add(activeShape);
   }
 }
 
@@ -446,7 +617,7 @@ function onMouseMove(o) {
   if (!isDrawing || !activeShape) return;
   const pointer = canvas.getPointer(o.e);
 
-  if (currentTool === 'rect') {
+  if (currentTool === 'rect' || currentTool === 'blur' || currentTool === 'mosaic') {
     activeShape.set({
       width: Math.abs(pointer.x - startX),
       height: Math.abs(pointer.y - startY),
@@ -465,6 +636,40 @@ function onMouseMove(o) {
 function onMouseUp(o) {
   if (!isDrawing) return;
   isDrawing = false;
+
+  if ((currentTool === 'blur' || currentTool === 'mosaic') && activeShape) {
+    const tempShape = activeShape;
+    canvas.remove(tempShape);
+    activeShape = null;
+
+    const pointer = canvas.getPointer(o.e);
+    const left = Math.min(startX, pointer.x);
+    const top = Math.min(startY, pointer.y);
+    const width = Math.abs(pointer.x - startX);
+    const height = Math.abs(pointer.y - startY);
+
+    if (width > 5 && height > 5) {
+      const sx = left - canvasPadding;
+      const sy = top - canvasPadding;
+      const outputCanvas = generateBlurredOrPixelatedElement(sx, sy, width, height, currentTool, currentThickness);
+      const effectObj = new fabric.Image(outputCanvas, {
+        left: left,
+        top: top,
+        width: width,
+        height: height,
+        selectable: false,
+        evented: false
+      });
+      effectObj.customType = currentTool;
+      effectObj.effectIntensity = currentThickness;
+      effectObj.src = outputCanvas.toDataURL();
+      
+      canvas.add(effectObj);
+      canvas.renderAll();
+      saveHistory();
+    }
+    return;
+  }
 
   if (currentTool === 'arrow' && activeShape) {
     // Create arrow head and group it
@@ -544,6 +749,7 @@ function onSelection(o) {
     } else {
       fontPropGroup.style.display = 'none';
     }
+    updateThicknessSliderLabel();
   }
 }
 
