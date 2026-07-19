@@ -280,7 +280,7 @@ function setTool(tool) {
   // If select, enable selection, else disable so we can click-drag to draw
   canvas.selection = (tool === 'select');
   canvas.getObjects().forEach(o => {
-    o.selectable = (tool === 'select' || tool === 'text'); // Allow selecting text maybe? No, let's keep strict.
+    o.selectable = (tool === 'select' || tool === 'text');
     o.evented = (tool === 'select' || tool === 'text');
   });
   
