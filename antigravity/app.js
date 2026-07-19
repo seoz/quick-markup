@@ -52,7 +52,7 @@ modalConfirm.addEventListener('click', () => {
 // State
 let canvas = null;
 let currentTool = 'select'; // select, draw, arrow, rect, circle, text
-let currentColor = '#ff3366';
+let currentColor = '#ff0000';
 let currentThickness = 10;
 let currentFont = 'Inter';
 let isBold = false;
